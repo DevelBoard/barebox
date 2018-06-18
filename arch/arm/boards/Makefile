@@ -133,3 +133,4 @@ obj-$(CONFIG_MACH_ZEDBOARD)			+= avnet-zedboard/
 obj-$(CONFIG_MACH_ZYLONITE)			+= zylonite/
 obj-$(CONFIG_MACH_VARISCITE_MX6)		+= variscite-mx6/
 obj-$(CONFIG_MACH_SECO_MX6_UQ7)			+= seco-mx6-uq7/
+obj-$(CONFIG_MACH_SECO_MX6_UQ7_962)		+= seco-mx6-uq7-962/
