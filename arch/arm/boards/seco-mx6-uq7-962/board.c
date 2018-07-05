@@ -39,6 +39,8 @@
 #include <mach/bbu.h>
 #include <dboard.h>
 
+#define BOOT_PIN	IMX_GPIO_NR(2, 4)
+
 int dboard_get_serial(uint8_t *out, size_t cnt)
 {
 	uint64_t uid;
@@ -51,6 +53,16 @@ int dboard_get_serial(uint8_t *out, size_t cnt)
 	memcpy(out, &uid, min(cnt, sizeof(uid)));
 
 	return 0;
+}
+
+static void boot_validate(void)
+{
+	gpio_direction_output(BOOT_PIN, 0);
+
+	/* 1ms strobe */
+	gpio_set_value(BOOT_PIN, 0);
+	udelay(1000);
+	gpio_set_value(BOOT_PIN, 1);
 }
 
 static int uq7_mem_init(void)
@@ -90,6 +102,9 @@ static int uq7_coredevices_init(void)
 {
 	if (!of_machine_is_compatible("seco,imx6q-uq7-962"))
 		return 0;
+
+	/* Required to inform the Embedded Controller of a correct boot */
+	boot_validate();
 
 	barebox_set_model("SECO i.MX6 uQ7-962");
 	barebox_set_hostname("seco");

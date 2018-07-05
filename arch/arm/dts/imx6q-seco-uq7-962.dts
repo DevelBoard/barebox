@@ -43,6 +43,13 @@
 	pinctrl-names = "default";
 
 	imx6dl-seco-uq7 {
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				/* BOOT validate */
+				MX6QDL_PAD_NANDF_D4__GPIO2_IO04		0x80000000
+			>;
+		};
+
 		pinctrl_uart2: uart2grp {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D26__UART2_TX_DATA	0x1b0b1
