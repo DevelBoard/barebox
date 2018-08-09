@@ -39,8 +39,16 @@
 #include <mach/bbu.h>
 #include <dboard.h>
 
-#define PHY_ID_KSZ9031		0x00221620
-#define MICREL_PHY_ID_MASK	0x00fffff0
+/* PHY related definitions */
+#define PHY_ID_KSZ9031				0x00221620
+#define MICREL_PHY_ID_MASK			0x00fffff0
+#define MII_KSZ9031_EXT_RGMII_CTRL_SIG_SKEW	0x04
+#define MII_KSZ9031_EXT_RGMII_RX_DATA_SKEW	0x05
+#define MII_KSZ9031_EXT_RGMII_TX_DATA_SKEW	0x06
+#define MII_KSZ9031_EXT_RGMII_CLOCK_SKEW	0x08
+#define MII_KSZ9031_MOD_DATA_NO_POST_INC	0x4000
+#define MII_KSZ9031_MMD_ACCES_CTRL		0x0d
+#define MII_KSZ9031_MMD_REG_DATA		0x0e
 
 #define BOOT_PIN	IMX_GPIO_NR(2, 4)
 
@@ -68,14 +76,36 @@ static void boot_validate(void)
 	gpio_set_value(BOOT_PIN, 1);
 }
 
+static int ksz9031_phy_extended_write(struct phy_device *dev,
+				      int devaddr, int regnum, u16 mode, u16 val)
+{
+	phy_write(dev, MII_KSZ9031_MMD_ACCES_CTRL, devaddr);
+	phy_write(dev, MII_KSZ9031_MMD_REG_DATA, regnum);
+	phy_write(dev, MII_KSZ9031_MMD_ACCES_CTRL, (mode | devaddr));
+	return phy_write(dev, MII_KSZ9031_MMD_REG_DATA, val);
+}
+
 static int ksz9031_phy_fixup(struct phy_device *dev)
 {
-	phy_write(dev, MII_BMCR, 0x2100);
+	/* control data pad skew - devaddr = 0x02, register = 0x04 */
+	ksz9031_phy_extended_write(dev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CTRL_SIG_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
 
-	phy_write_mmd_indirect(dev, 2, 4, 0);
-	phy_write_mmd_indirect(dev, 2, 5, 0);
-	phy_write_mmd_indirect(dev, 2, 6, 0);
-	phy_write_mmd_indirect(dev, 2, 8, 0x003ff);
+	/* rx data pad skew - devaddr = 0x02, register = 0x05 */
+	ksz9031_phy_extended_write(dev, 0x02,
+			MII_KSZ9031_EXT_RGMII_RX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
+
+	/* tx data pad skew - devaddr = 0x02, register = 0x05 */
+	ksz9031_phy_extended_write(dev, 0x02,
+			MII_KSZ9031_EXT_RGMII_TX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
+
+	/* gtx and rx clock pad skew - devaddr = 0x02, register = 0x08 */
+	ksz9031_phy_extended_write(dev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CLOCK_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x03FF);
 
 	return 0;
 }

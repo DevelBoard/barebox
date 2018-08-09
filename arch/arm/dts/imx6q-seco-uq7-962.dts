@@ -108,8 +108,6 @@
 
 				/* ENET RESET */
 				MX6QDL_PAD_EIM_D23__GPIO3_IO23               0x1f071
-				/* ENET CLK125_EN */
-				MX6QDL_PAD_RGMII_RX_CTL__GPIO6_IO24             0x1f071
 			>;
 		};
 	};
