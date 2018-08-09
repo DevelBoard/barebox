@@ -39,6 +39,9 @@
 #include <mach/bbu.h>
 #include <dboard.h>
 
+#define PHY_ID_KSZ9031		0x00221620
+#define MICREL_PHY_ID_MASK	0x00fffff0
+
 #define BOOT_PIN	IMX_GPIO_NR(2, 4)
 
 int dboard_get_serial(uint8_t *out, size_t cnt)
@@ -63,6 +66,18 @@ static void boot_validate(void)
 	gpio_set_value(BOOT_PIN, 0);
 	udelay(1000);
 	gpio_set_value(BOOT_PIN, 1);
+}
+
+static int ksz9031_phy_fixup(struct phy_device *dev)
+{
+	phy_write(dev, MII_BMCR, 0x2100);
+
+	phy_write_mmd_indirect(dev, 2, 4, 0);
+	phy_write_mmd_indirect(dev, 2, 5, 0);
+	phy_write_mmd_indirect(dev, 2, 6, 0);
+	phy_write_mmd_indirect(dev, 2, 8, 0x003ff);
+
+	return 0;
 }
 
 static int uq7_mem_init(void)
@@ -105,6 +120,9 @@ static int uq7_coredevices_init(void)
 
 	/* Required to inform the Embedded Controller of a correct boot */
 	boot_validate();
+	
+	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
+				ksz9031_phy_fixup);
 
 	barebox_set_model("SECO i.MX6 uQ7-962");
 	barebox_set_hostname("seco");
