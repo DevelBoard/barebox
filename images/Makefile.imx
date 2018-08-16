@@ -291,3 +291,8 @@ pblx-$(CONFIG_MACH_SECO_MX6_UQ7) += start_seco_mx6_uq7
 CFG_start_seco_mx6_uq7.pblx.imximg = $(board)/seco-mx6-uq7/flash-header-mx6.imxcfg
 FILE_barebox-seco-mx6-uq7.img = start_seco_mx6_uq7.pblx.imximg
 image-$(CONFIG_MACH_SECO_MX6_UQ7) += barebox-seco-mx6-uq7.img
+
+pblx-$(CONFIG_MACH_SECO_MX6_UQ7_962) += start_seco_mx6_uq7_962
+CFG_start_seco_mx6_uq7_962.pblx.imximg = $(board)/seco-mx6-uq7-962/flash-header-mx6.imxcfg
+FILE_barebox-seco-mx6-uq7-962.img = start_seco_mx6_uq7_962.pblx.imximg
+image-$(CONFIG_MACH_SECO_MX6_UQ7_962) += barebox-seco-mx6-uq7-962.img
