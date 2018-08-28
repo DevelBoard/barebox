@@ -21,28 +21,44 @@
 #include <command.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <fs.h>
 #include <uncompress.h>
 
 static int do_uncompress(int argc, char *argv[])
 {
+	unsigned long seek = 0;
 	int from, to, ret;
+	int argc_min;
+	int opt;
 
-	if (argc != 3)
+	while ((opt = getopt(argc, argv, "s:")) > 0) {
+		switch (opt) {
+		case 's':
+			seek = strtoull_suffix(optarg, NULL, 0);
+			break;
+		}
+	}
+
+	argc_min = optind + 2;
+
+	if (argc < argc_min)
 		return COMMAND_ERROR_USAGE;
 
-	from = open(argv[1], O_RDONLY);
+	from = open(argv[optind], O_RDONLY);
 	if (from < 0) {
 		perror("open");
 		return 1;
 	}
 
-	to = open(argv[2], O_WRONLY | O_CREAT);
+	to = open(argv[optind + 1], O_WRONLY | O_CREAT);
 	if (to < 0) {
 		perror("open");
 		ret = 1;
 		goto exit_close;
 	}
+
+	lseek(to, seek, SEEK_SET);
 
 	ret = uncompress_fd_to_fd(from, to, uncompress_err_stdout);
 
@@ -55,10 +71,16 @@ exit_close:
 	return ret;
 }
 
+BAREBOX_CMD_HELP_START(uncompress)
+BAREBOX_CMD_HELP_TEXT("Uncompress a compressed INFILE to OUTFILE.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-s COUNT", "seek to COUNT bytes from the start of OUTFILE")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(uncompress)
 	.cmd            = do_uncompress,
 	BAREBOX_CMD_DESC("uncompress a compressed file")
-	BAREBOX_CMD_OPTS("INFILE OUTFILE")
+	BAREBOX_CMD_OPTS("[-s COUNT] INFILE OUTFILE")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 BAREBOX_CMD_END
